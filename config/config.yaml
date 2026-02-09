@@ -1,0 +1,80 @@
+# Scraping Settings
+scraping:
+  sofascore:
+    base_url: "https://api.sofascore.com/api/v1"
+    timeout: 30
+    retry_attempts: 3
+    retry_delay: 2
+    rate_limit_delay: 1.5
+  
+  fotmob:
+    base_url: "https://www.fotmob.com/api"
+    timeout: 30
+    retry_attempts: 3
+    retry_delay: 2
+    rate_limit_delay: 1.5
+  
+  oneXbet:
+    base_url: "https://1xbet.co.ke"
+    timeout: 60
+    page_load_timeout: 30
+    implicit_wait: 10
+    headless: true
+    retry_attempts: 2
+
+# League IDs
+leagues:
+  premier_league: 17  # SofaScore ID
+  la_liga: 8
+  bundesliga: 35
+  serie_a: 23
+  ligue_1: 34
+  champions_league: 7
+
+# Model Parameters
+models:
+  poisson:
+    home_advantage: 1.3
+    min_matches_for_training: 20
+  
+  ml_predictor:
+    model_type: "random_forest"  # Options: random_forest, gradient_boosting
+    n_estimators: 100
+    max_depth: 10
+    min_samples_split: 5
+    rolling_window: 5
+    test_size: 0.2
+    random_state: 42
+  
+  edge_calculator:
+    min_edge_threshold: 0.03  # 3%
+    kelly_fraction: 0.25
+    max_stake_pct: 5.0
+    min_odds: 1.5
+    max_odds: 10.0
+
+# Database Configuration
+database:
+  echo: false
+  pool_size: 5
+  max_overflow: 10
+
+# Betting Parameters
+betting:
+  bankroll: 1000  # Default bankroll
+  min_edge: 0.03
+  max_stake_pct: 5.0
+  kelly_fraction: 0.25
+  min_odds: 1.5
+  max_odds: 10.0
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/football_analytics.log"
+
+# Scheduler
+scheduler:
+  scrape_interval_hours: 6
+  predict_interval_hours: 12
