@@ -150,3 +150,8 @@ logs/
 # ChromeDriver
 chromedriver
 geckodriver
+
+# Setup validation files
+SETUP_SUMMARY.md
+validate_setup.py
+demo_structure.py
