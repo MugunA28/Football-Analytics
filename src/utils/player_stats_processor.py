@@ -34,9 +34,6 @@ def calculate_rolling_average(data: List[float], window: int = 5) -> float:
         logger.warning("Empty data provided for rolling average calculation")
         return 0.0
     
-    if len(data) == 0:
-        return 0.0
-    
     # Use only the most recent 'window' values
     recent_data = data[-window:] if len(data) >= window else data
     
