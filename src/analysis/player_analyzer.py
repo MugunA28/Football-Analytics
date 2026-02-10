@@ -57,7 +57,7 @@ class PlayerAnalyzer:
             'premier_league': {
                 'fotmob_league_id': 47,
                 'sofascore_tournament_id': 17,
-                'sofascore_season_id': 52760,  # 2024/2025 season
+                'sofascore_season_id': 52760,  # 2024/2025 season (update when 2025/2026 available)
                 'season': '2025/2026'
             },
             'weights': {
