@@ -207,13 +207,20 @@ class PlayerAnalyzer:
             conversion_prob = 0.0
         
         # Calculate weighted probability
+        # Map weights to simpler keys
+        simple_weights = {
+            'xg': weights.get('xg_weight', 0.5),
+            'form': weights.get('recent_goals_weight', 0.3),
+            'conversion': weights.get('shot_conversion_weight', 0.2)
+        }
+        
         metrics = {
             'xg': xg_prob,
             'form': form_prob,
             'conversion': conversion_prob
         }
         
-        base_probability = calculate_weighted_probability(metrics, weights)
+        base_probability = calculate_weighted_probability(metrics, simple_weights)
         
         # Apply adjustments
         
@@ -284,13 +291,20 @@ class PlayerAnalyzer:
         key_passes_prob = normalize_probability(key_passes, 0.0, 5.0)
         
         # Calculate weighted probability
+        # Map weights to simpler keys
+        simple_weights = {
+            'xa': weights.get('xa_weight', 0.5),
+            'form': weights.get('recent_assists_weight', 0.3),
+            'key_passes': weights.get('key_passes_weight', 0.2)
+        }
+        
         metrics = {
             'xa': xa_prob,
             'form': form_prob,
             'key_passes': key_passes_prob
         }
         
-        base_probability = calculate_weighted_probability(metrics, weights)
+        base_probability = calculate_weighted_probability(metrics, simple_weights)
         
         # Apply adjustments
         minutes_factor = calculate_minutes_adjustment(minutes_played, 450, min_minutes)
@@ -342,13 +356,20 @@ class PlayerAnalyzer:
         opponent_prob = 1.0 - normalize_probability(opponent_xg, 0.0, 2.5)
         
         # Calculate weighted probability
+        # Map weights to simpler keys
+        simple_weights = {
+            'defensive_xg': weights.get('defensive_xg_weight', 0.4),
+            'form': weights.get('recent_clean_sheets_weight', 0.3),
+            'opponent': weights.get('opponent_strength_weight', 0.3)
+        }
+        
         metrics = {
             'defensive_xg': defensive_prob,
             'form': form_prob,
             'opponent': opponent_prob
         }
         
-        base_probability = calculate_weighted_probability(metrics, weights)
+        base_probability = calculate_weighted_probability(metrics, simple_weights)
         
         # Apply home advantage
         adjusted_probability = apply_home_advantage_factor(base_probability, is_home, home_boost=0.15)
