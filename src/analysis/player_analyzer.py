@@ -58,7 +58,7 @@ class PlayerAnalyzer:
                 'fotmob_league_id': 47,
                 'sofascore_tournament_id': 17,
                 'sofascore_season_id': 52760,  # 2024/2025 season
-                'season': '2024/2025'
+                'season': '2025/2026'
             },
             'weights': {
                 'goal_probability': {
