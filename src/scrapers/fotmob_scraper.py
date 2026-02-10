@@ -219,7 +219,7 @@ class FotMobScraper:
     
     def get_player_statistics(self, match_id: int) -> Optional[List[Dict]]:
         """
-        Get player statistics for a specific match.
+        Get player statistics for a specific match, including xG, xA, shots, and key passes.
         
         Args:
             match_id: FotMob match ID
@@ -244,14 +244,35 @@ class FotMobScraper:
                     players = team.get('players', [])
                     
                     for player in players:
+                        # Extract basic info
                         player_info = {
                             'team': team_name,
                             'name': player.get('name', {}).get('fullName', 'Unknown'),
+                            'player_id': player.get('id'),
                             'position': player.get('role', 'Unknown'),
                             'rating': player.get('rating', {}).get('num'),
                             'goals': player.get('goals', 0),
                             'assists': player.get('assists', 0),
+                            'minutes_played': player.get('minutesPlayed', 0),
                         }
+                        
+                        # Extract advanced stats if available
+                        stats = player.get('stats', [])
+                        for stat in stats:
+                            stat_key = stat.get('key', '')
+                            stat_value = stat.get('value')
+                            
+                            if stat_key == 'expected_goals':
+                                player_info['xg'] = stat_value
+                            elif stat_key == 'expected_assists':
+                                player_info['xa'] = stat_value
+                            elif stat_key == 'total_shots':
+                                player_info['shots'] = stat_value
+                            elif stat_key == 'ontarget_scoring_att':
+                                player_info['shots_on_target'] = stat_value
+                            elif stat_key == 'big_chance_created':
+                                player_info['key_passes'] = stat_value
+                        
                         players_data.append(player_info)
             
             logger.info(f"Extracted data for {len(players_data)} players")
@@ -259,6 +280,164 @@ class FotMobScraper:
         
         except Exception as e:
             logger.error(f"Error extracting player statistics: {e}")
+            return None
+    
+    def get_premier_league_fixtures(self, matchweek: int, season: str = "2024/2025") -> Optional[List[Dict]]:
+        """
+        Get Premier League fixtures for a specific matchweek.
+        
+        Args:
+            matchweek: Matchweek number
+            season: Season (e.g., "2024/2025")
+        
+        Returns:
+            List of fixtures or None if request fails
+        """
+        logger.info(f"Fetching Premier League fixtures for matchweek {matchweek}")
+        
+        # Premier League ID in FotMob is 47
+        league_data = self.get_league_matches(league_id=47, season=season)
+        
+        if not league_data:
+            return None
+        
+        try:
+            fixtures = []
+            
+            # Try to find fixtures in different possible structures
+            if 'matches' in league_data:
+                matches = league_data.get('matches', {})
+                if 'allMatches' in matches:
+                    all_matches = matches['allMatches']
+                    for match in all_matches:
+                        if match.get('round', 0) == matchweek:
+                            fixture = {
+                                'match_id': match.get('id'),
+                                'home_team': match.get('home', {}).get('name'),
+                                'home_team_id': match.get('home', {}).get('id'),
+                                'away_team': match.get('away', {}).get('name'),
+                                'away_team_id': match.get('away', {}).get('id'),
+                                'date': match.get('status', {}).get('utcTime'),
+                                'status': match.get('status', {}).get('started', False),
+                                'round': match.get('round')
+                            }
+                            fixtures.append(fixture)
+            
+            logger.info(f"Found {len(fixtures)} fixtures for matchweek {matchweek}")
+            return fixtures if fixtures else None
+        
+        except Exception as e:
+            logger.error(f"Error extracting fixtures: {e}")
+            return None
+    
+    def get_player_season_stats(self, player_id: int, season: str = "2024/2025") -> Optional[Dict]:
+        """
+        Get player season statistics.
+        
+        Args:
+            player_id: FotMob player ID
+            season: Season (e.g., "2024/2025")
+        
+        Returns:
+            Dictionary containing player season stats or None if request fails
+        """
+        logger.info(f"Fetching season stats for player {player_id}")
+        endpoint = f"/playerData"
+        params = {'id': player_id}
+        
+        player_data = self._make_request(endpoint, params)
+        
+        if not player_data:
+            return None
+        
+        try:
+            season_stats = {}
+            
+            # Extract primary stats
+            if 'primaryTeam' in player_data:
+                primary_team = player_data['primaryTeam']
+                season_stats['team'] = primary_team.get('name')
+                season_stats['team_id'] = primary_team.get('id')
+            
+            # Extract season stats from playerProps
+            if 'playerProps' in player_data:
+                props = player_data['playerProps']
+                season_stats['name'] = props.get('name')
+                season_stats['position'] = props.get('position')
+                season_stats['age'] = props.get('age')
+            
+            # Extract statistics from statSeason
+            if 'statSeasons' in player_data:
+                stat_seasons = player_data['statSeasons']
+                for stat_season in stat_seasons:
+                    if season in stat_season.get('seasonName', ''):
+                        tournaments = stat_season.get('tournaments', [])
+                        for tournament in tournaments:
+                            if tournament.get('name') == 'Premier League':
+                                stats = tournament.get('stats', {})
+                                season_stats.update({
+                                    'appearances': stats.get('appearances'),
+                                    'goals': stats.get('goals'),
+                                    'assists': stats.get('assists'),
+                                    'minutes_played': stats.get('minutesPlayed'),
+                                    'rating': stats.get('rating'),
+                                    'expected_goals': stats.get('expectedGoals'),
+                                    'expected_assists': stats.get('expectedAssists'),
+                                })
+            
+            return season_stats if season_stats else None
+        
+        except Exception as e:
+            logger.error(f"Error extracting player season stats: {e}")
+            return None
+    
+    def get_player_xg_stats(self, player_id: int, season: str = "2024/2025") -> Optional[Dict]:
+        """
+        Get player xG statistics for a specific season.
+        
+        Args:
+            player_id: FotMob player ID
+            season: Season (e.g., "2024/2025")
+        
+        Returns:
+            Dictionary containing xG-related statistics or None if request fails
+        """
+        logger.info(f"Fetching xG stats for player {player_id}")
+        
+        season_stats = self.get_player_season_stats(player_id, season)
+        
+        if not season_stats:
+            return None
+        
+        try:
+            xg_stats = {
+                'player_id': player_id,
+                'name': season_stats.get('name'),
+                'team': season_stats.get('team'),
+                'expected_goals': season_stats.get('expected_goals', 0.0),
+                'expected_assists': season_stats.get('expected_assists', 0.0),
+                'actual_goals': season_stats.get('goals', 0),
+                'actual_assists': season_stats.get('assists', 0),
+                'minutes_played': season_stats.get('minutes_played', 0),
+            }
+            
+            # Calculate per 90 metrics
+            minutes = xg_stats['minutes_played']
+            if minutes > 0:
+                xg_stats['xg_per_90'] = (xg_stats['expected_goals'] / minutes) * 90
+                xg_stats['xa_per_90'] = (xg_stats['expected_assists'] / minutes) * 90
+                xg_stats['goals_per_90'] = (xg_stats['actual_goals'] / minutes) * 90
+                xg_stats['assists_per_90'] = (xg_stats['actual_assists'] / minutes) * 90
+            else:
+                xg_stats['xg_per_90'] = 0.0
+                xg_stats['xa_per_90'] = 0.0
+                xg_stats['goals_per_90'] = 0.0
+                xg_stats['assists_per_90'] = 0.0
+            
+            return xg_stats
+        
+        except Exception as e:
+            logger.error(f"Error calculating xG stats: {e}")
             return None
     
     def get_team_form(self, team_id: int, num_matches: int = 5) -> Optional[List[Dict]]:

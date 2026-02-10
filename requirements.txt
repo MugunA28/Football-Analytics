@@ -24,6 +24,7 @@ APScheduler>=3.10.4
 
 # Visualization
 matplotlib>=3.8.2
+seaborn>=0.13.0
 plotly>=5.18.0
 streamlit>=1.29.0
 

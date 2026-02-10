@@ -54,6 +54,14 @@ This system combines data science, statistical modeling, and sports analytics to
 - **Portfolio Management**: Track exposure and expected returns
 - **Risk Management**: Maximum stake limits and minimum edge thresholds
 
+### Player Analysis (NEW!)
+- **PlayerAnalyzer**: Comprehensive player performance analysis system
+- **Probability Calculations**: Goal scoring, assist, and clean sheet probabilities
+- **xG-Based Analysis**: Expected Goals (xG) and Expected Assists (xA) metrics
+- **Matchweek Reports**: Generate detailed analysis for any Premier League matchweek
+- **Interactive Visualizations**: Jupyter notebooks with charts and graphs
+- **Multiple Output Formats**: Console, JSON, and CSV outputs
+
 ### Database & Storage
 - SQLAlchemy ORM for data persistence
 - PostgreSQL/SQLite support
@@ -83,18 +91,27 @@ Football-Analytics/
 │   │   ├── sofascore_scraper.py
 │   │   ├── fotmob_scraper.py
 │   │   └── oneXbet_scraper.py
+│   ├── analysis/         # Player analysis module (NEW!)
+│   │   └── player_analyzer.py
 │   ├── models/           # Prediction models
 │   │   ├── poisson_model.py
 │   │   ├── ml_predictor.py
 │   │   └── edge_calculator.py
+│   ├── scripts/          # Command-line scripts (NEW!)
+│   │   └── analyze_matchweek.py
 │   ├── utils/            # Utility functions
 │   │   ├── data_processor.py
-│   │   └── database.py
+│   │   ├── database.py
+│   │   └── player_stats_processor.py  # NEW!
 │   └── main.py           # Main application entry point
 ├── notebooks/            # Jupyter notebooks for analysis
+│   └── player_analysis_matchweek26.ipynb  # NEW!
 ├── tests/                # Unit tests
+│   ├── test_scrapers.py
+│   └── test_player_analyzer.py  # NEW!
 ├── config/               # Configuration files
 │   ├── config.yaml
+│   ├── player_analysis_config.yaml  # NEW!
 │   └── .env.example
 ├── requirements.txt      # Python dependencies
 ├── setup.py              # Package setup
@@ -184,6 +201,21 @@ python src/main.py analyze
 #### 5. Backtest Strategy
 ```bash
 python src/main.py backtest --data data/processed/historical_matches.csv
+```
+
+#### 6. Player Analysis (NEW!)
+```bash
+# Analyze Premier League matchweek
+python src/scripts/analyze_matchweek.py --matchweek 26 --output console
+
+# Export to JSON
+python src/scripts/analyze_matchweek.py --matchweek 26 --output json --file data/processed/matchweek_26.json
+
+# Export to CSV
+python src/scripts/analyze_matchweek.py --matchweek 26 --output csv --file data/processed/matchweek_26.csv
+
+# Verbose output
+python src/scripts/analyze_matchweek.py --matchweek 26 --output console --verbose
 ```
 
 ### Python API Usage
@@ -286,6 +318,56 @@ print(f"Test Accuracy: {metrics['test_accuracy']:.2%}")
 predictor.save_model('data/models/ml_predictor.pkl')
 ```
 
+#### Example 5: Player Analysis (NEW!)
+```python
+from src.analysis.player_analyzer import PlayerAnalyzer
+from src.scrapers.fotmob_scraper import FotMobScraper
+from src.scrapers.sofascore_scraper import SofaScoreScraper
+
+# Initialize scrapers and analyzer
+fotmob = FotMobScraper()
+sofascore = SofaScoreScraper()
+analyzer = PlayerAnalyzer(fotmob_scraper=fotmob, sofascore_scraper=sofascore)
+
+# Get fixtures for matchweek 26
+fixtures = analyzer.get_premier_league_fixtures(matchweek=26)
+print(f"Found {len(fixtures)} fixtures")
+
+# Calculate goal probability for a player
+player_stats = {
+    'xg_per_90': 0.85,
+    'recent_goals': [2, 1, 0, 1, 2],  # Last 5 matches
+    'shots_total': 20,
+    'shots_on_target': 12,
+    'minutes_played': 450,
+    'is_home': True,
+    'opponent_rating': 68.0
+}
+
+goal_prob = analyzer.calculate_goal_probability(player_stats)
+print(f"Goal probability: {goal_prob * 100:.1f}%")
+
+# Generate full analysis report
+report = analyzer.generate_analysis_report(matchweek=26, top_n=20)
+
+# Display console output
+console_output = analyzer.format_console_output(report, output_top_n=20)
+print(console_output)
+
+# Rank players by goal probability
+from src.utils.player_stats_processor import scale_to_percentage
+
+top_scorers = analyzer.rank_players_by_metric(
+    players=report['top_goal_scorers'],
+    metric='goal_probability',
+    top_n=10
+)
+
+for player in top_scorers:
+    print(f"{player['rank']}. {player['name']} - {scale_to_percentage(player['goal_probability']):.1f}%")
+```
+
+
 ## 📊 Data Sources
 
 ### SofaScore API
@@ -342,6 +424,48 @@ where:
   b = net odds (decimal odds - 1)
   p = probability of winning
   q = probability of losing (1 - p)
+```
+
+### Player Analyzer (NEW!)
+
+The PlayerAnalyzer provides comprehensive player performance analysis:
+
+**Key Features:**
+- **Goal Probability Calculation**: Uses xG per 90, recent form, and shot conversion
+- **Assist Probability Calculation**: Uses xA per 90, key passes, and recent assists
+- **Clean Sheet Probability**: Uses defensive xG, recent clean sheets, and opponent strength
+- **Multiple Adjustments**: Home advantage, opponent strength, minutes played
+
+**Probability Components:**
+
+1. **Goal Scoring Probability**:
+   - xG per 90 (50% weight): Expected goals normalized per 90 minutes
+   - Recent Form (30% weight): Rolling average of goals in last 5 matches
+   - Shot Conversion (20% weight): Shots on target / total shots
+
+2. **Assist Probability**:
+   - xA per 90 (50% weight): Expected assists normalized per 90 minutes
+   - Recent Form (30% weight): Rolling average of assists in last 5 matches
+   - Key Passes (20% weight): Number of key passes per match
+
+3. **Clean Sheet Probability**:
+   - Defensive xG (40% weight): Expected goals conceded per 90
+   - Recent Clean Sheets (30% weight): Clean sheets in last 5 matches
+   - Opponent Strength (30% weight): Opponent's attacking rating
+
+**Adjustments Applied:**
+- **Minutes Adjustment**: Players with fewer minutes get reduced probabilities
+- **Home Advantage**: +10% boost for home teams, -5% for away teams
+- **Opponent Strength**: Adjusted based on opponent's defensive/attacking rating
+
+**Example Output**:
+```
+=== PREMIER LEAGUE MATCHWEEK 26 ANALYSIS ===
+
+TOP 20 PLAYERS - GOAL SCORING PROBABILITY:
+Rank | Player Name        | Team          | vs Opponent    | Probability | xG/90 | Form
+1    | Erling Haaland    | Man City      | vs Brighton    | 68.5%      | 1.12  | ⭐⭐⭐⭐⭐
+2    | Mohamed Salah     | Liverpool     | vs Burnley     | 64.2%      | 0.98  | ⭐⭐⭐⭐⭐
 ```
 
 ## ⚙️ Configuration

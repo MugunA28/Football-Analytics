@@ -1,0 +1,126 @@
+# Player Analysis Configuration
+# Configuration for Premier League player analysis system
+
+analysis:
+  premier_league:
+    tournament_id: 17  # SofaScore Tournament ID
+    league_id: 47      # FotMob League ID
+    season: "2024/2025"
+    sofascore_season_id: 52760  # SofaScore Season ID for 2024/2025
+    matchweek: 26
+  
+  # Probability calculation weights
+  weights:
+    goal_probability:
+      xg_weight: 0.5              # Weight for xG per 90 metric
+      recent_goals_weight: 0.3    # Weight for recent goal-scoring form
+      shot_conversion_weight: 0.2 # Weight for shot conversion rate
+    
+    assist_probability:
+      xa_weight: 0.5              # Weight for xA per 90 metric
+      recent_assists_weight: 0.3  # Weight for recent assist form
+      key_passes_weight: 0.2      # Weight for key passes
+    
+    clean_sheet_probability:
+      defensive_xg_weight: 0.4         # Weight for defensive xG against
+      recent_clean_sheets_weight: 0.3  # Weight for recent clean sheets
+      opponent_strength_weight: 0.3    # Weight for opponent attacking strength
+  
+  # Analysis parameters
+  rolling_window: 5           # Number of recent matches to consider (last 5 matches)
+  min_minutes_played: 180     # Minimum minutes required in analysis period (2 full matches)
+  home_advantage_boost: 0.1   # Home advantage factor (10% boost)
+  league_avg_rating: 70.0     # Average team rating in the league
+  
+  # Output settings
+  top_n_players: 20           # Number of top players to show in each category
+  top_n_teams: 10             # Number of top teams for clean sheets
+
+# League IDs for reference
+leagues:
+  premier_league:
+    fotmob_id: 47
+    sofascore_id: 17
+    sofascore_season_2024_25: 52760
+    sofascore_season_2023_24: 41886
+  
+  la_liga:
+    sofascore_id: 8
+  
+  bundesliga:
+    sofascore_id: 35
+  
+  serie_a:
+    sofascore_id: 23
+  
+  ligue_1:
+    sofascore_id: 34
+
+# Scraper settings (override defaults)
+scraping:
+  fotmob:
+    base_url: "https://www.fotmob.com/api"
+    timeout: 30
+    retry_attempts: 3
+    retry_delay: 2
+    rate_limit_delay: 1.5
+  
+  sofascore:
+    base_url: "https://api.sofascore.com/api/v1"
+    timeout: 30
+    retry_attempts: 3
+    retry_delay: 2
+    rate_limit_delay: 1.5
+
+# Probability ranges for normalization
+probability_ranges:
+  xg_per_90:
+    min: 0.0
+    max: 1.5
+    top_tier: 1.0  # Players above this are elite
+  
+  xa_per_90:
+    min: 0.0
+    max: 1.0
+    top_tier: 0.6
+  
+  goals_per_match:
+    min: 0.0
+    max: 2.0
+    top_tier: 1.0
+  
+  assists_per_match:
+    min: 0.0
+    max: 1.5
+    top_tier: 0.8
+  
+  xg_conceded_per_90:
+    min: 0.0
+    max: 2.5
+    low_tier: 0.8  # Teams below this have strong defense
+  
+  key_passes_per_match:
+    min: 0.0
+    max: 5.0
+    top_tier: 3.0
+
+# Feature flags
+features:
+  enable_home_advantage: true
+  enable_opponent_adjustment: true
+  enable_minutes_adjustment: true
+  enable_form_weighting: true
+  cache_player_data: true
+  use_exponential_moving_average: false  # Use simple rolling average by default
+
+# Cache settings
+cache:
+  enabled: true
+  ttl_seconds: 3600  # Cache timeout: 1 hour
+  directory: "data/.cache"
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/player_analysis.log"
