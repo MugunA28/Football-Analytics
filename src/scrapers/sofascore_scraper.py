@@ -251,6 +251,166 @@ class SofaScoreScraper:
             endpoint = f"/tournament/{tournament_id}/season/{season_id}/events/last/0"
         
         return self._make_request(endpoint)
+    
+    def get_tournament_fixtures(self, tournament_id: int, season_id: int, round_num: int) -> Optional[List[Dict]]:
+        """
+        Get fixtures for a specific tournament round (Premier League = tournament_id: 17).
+        
+        Args:
+            tournament_id: Tournament/league ID (Premier League = 17)
+            season_id: Season ID
+            round_num: Round/matchweek number
+        
+        Returns:
+            List of fixture dictionaries or None if request fails
+        """
+        logger.info(f"Fetching fixtures for tournament {tournament_id}, season {season_id}, round {round_num}")
+        
+        matches_data = self.get_tournament_matches(tournament_id, season_id, round_num)
+        
+        if not matches_data:
+            return None
+        
+        try:
+            fixtures = []
+            events = matches_data.get('events', [])
+            
+            for event in events:
+                fixture = {
+                    'match_id': event.get('id'),
+                    'home_team': event.get('homeTeam', {}).get('name'),
+                    'home_team_id': event.get('homeTeam', {}).get('id'),
+                    'away_team': event.get('awayTeam', {}).get('name'),
+                    'away_team_id': event.get('awayTeam', {}).get('id'),
+                    'start_timestamp': event.get('startTimestamp'),
+                    'status': event.get('status', {}).get('type'),
+                    'round': event.get('roundInfo', {}).get('round'),
+                    'home_score': event.get('homeScore', {}).get('current'),
+                    'away_score': event.get('awayScore', {}).get('current'),
+                }
+                fixtures.append(fixture)
+            
+            logger.info(f"Found {len(fixtures)} fixtures for round {round_num}")
+            return fixtures if fixtures else None
+        
+        except Exception as e:
+            logger.error(f"Error extracting fixtures: {e}")
+            return None
+    
+    def get_player_stats(self, player_id: int, tournament_id: int, season_id: int) -> Optional[Dict]:
+        """
+        Get player statistics for a specific tournament and season.
+        
+        Args:
+            player_id: SofaScore player ID
+            tournament_id: Tournament/league ID
+            season_id: Season ID
+        
+        Returns:
+            Dictionary containing player statistics or None if request fails
+        """
+        logger.info(f"Fetching stats for player {player_id} in tournament {tournament_id}, season {season_id}")
+        endpoint = f"/player/{player_id}/statistics/season/{season_id}"
+        
+        player_data = self._make_request(endpoint)
+        
+        if not player_data:
+            return None
+        
+        try:
+            player_stats = {}
+            
+            # Extract player info
+            if 'player' in player_data:
+                player = player_data['player']
+                player_stats['name'] = player.get('name')
+                player_stats['position'] = player.get('position')
+                player_stats['team_name'] = player.get('team', {}).get('name')
+            
+            # Extract statistics
+            if 'statistics' in player_data:
+                stats = player_data['statistics']
+                
+                # Find relevant tournament stats
+                for stat_group in stats:
+                    if stat_group.get('tournament', {}).get('id') == tournament_id:
+                        stat_dict = stat_group.get('statistics', {})
+                        
+                        player_stats.update({
+                            'appearances': stat_dict.get('appearances'),
+                            'goals': stat_dict.get('goals'),
+                            'assists': stat_dict.get('assists'),
+                            'minutes_played': stat_dict.get('minutesPlayed'),
+                            'rating': stat_dict.get('rating'),
+                            'expected_goals': stat_dict.get('expectedGoals'),
+                            'expected_assists': stat_dict.get('expectedAssists'),
+                            'shots_total': stat_dict.get('shotsTotal'),
+                            'shots_on_target': stat_dict.get('shotsOnTarget'),
+                            'key_passes': stat_dict.get('keyPasses'),
+                            'big_chances_created': stat_dict.get('bigChancesCreated'),
+                            'big_chances_missed': stat_dict.get('bigChancesMissed'),
+                            # Defensive stats
+                            'clean_sheets': stat_dict.get('cleanSheets'),
+                            'tackles': stat_dict.get('tackles'),
+                            'interceptions': stat_dict.get('interceptions'),
+                            'clearances': stat_dict.get('clearances'),
+                            'goals_conceded': stat_dict.get('goalsConceded'),
+                        })
+            
+            return player_stats if player_stats else None
+        
+        except Exception as e:
+            logger.error(f"Error extracting player stats: {e}")
+            return None
+    
+    def get_team_defensive_stats(self, team_id: int, tournament_id: int, season_id: int) -> Optional[Dict]:
+        """
+        Get defensive statistics for a team.
+        
+        Args:
+            team_id: SofaScore team ID
+            tournament_id: Tournament/league ID
+            season_id: Season ID
+        
+        Returns:
+            Dictionary containing defensive statistics or None if request fails
+        """
+        logger.info(f"Fetching defensive stats for team {team_id}")
+        
+        team_stats = self.get_team_statistics(team_id, tournament_id, season_id)
+        
+        if not team_stats:
+            return None
+        
+        try:
+            defensive_stats = {}
+            
+            if 'statistics' in team_stats:
+                stats = team_stats['statistics']
+                
+                defensive_stats = {
+                    'team_id': team_id,
+                    'clean_sheets': stats.get('cleanSheets'),
+                    'goals_conceded': stats.get('goalsConceded'),
+                    'xg_conceded': stats.get('expectedGoalsAgainst'),
+                    'shots_conceded': stats.get('shotsAgainst'),
+                    'tackles': stats.get('tackles'),
+                    'interceptions': stats.get('interceptions'),
+                    'matches_played': stats.get('matchesPlayed'),
+                }
+                
+                # Calculate per match averages
+                matches = defensive_stats.get('matches_played', 1)
+                if matches > 0:
+                    defensive_stats['clean_sheets_per_match'] = defensive_stats.get('clean_sheets', 0) / matches
+                    defensive_stats['goals_conceded_per_match'] = defensive_stats.get('goals_conceded', 0) / matches
+                    defensive_stats['xg_conceded_per_match'] = defensive_stats.get('xg_conceded', 0) / matches
+            
+            return defensive_stats if defensive_stats else None
+        
+        except Exception as e:
+            logger.error(f"Error extracting defensive stats: {e}")
+            return None
 
 
 if __name__ == "__main__":
