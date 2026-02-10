@@ -372,7 +372,7 @@ class TestPlayerAnalyzer:
         
         assert len(fixtures) == 2
         assert fixtures[0]['match_id'] == 1
-        mock_fotmob.get_premier_league_fixtures.assert_called_once_with(26, '2024/2025')
+        mock_fotmob.get_premier_league_fixtures.assert_called_once_with(26, '2025/2026')
     
     @patch('src.analysis.player_analyzer.FotMobScraper')
     def test_generate_analysis_report(self, mock_fotmob_class):

@@ -282,13 +282,13 @@ class FotMobScraper:
             logger.error(f"Error extracting player statistics: {e}")
             return None
     
-    def get_premier_league_fixtures(self, matchweek: int, season: str = "2024/2025") -> Optional[List[Dict]]:
+    def get_premier_league_fixtures(self, matchweek: int, season: str = "2025/2026") -> Optional[List[Dict]]:
         """
         Get Premier League fixtures for a specific matchweek.
         
         Args:
             matchweek: Matchweek number
-            season: Season (e.g., "2024/2025")
+            season: Season (e.g., "2025/2026")
         
         Returns:
             List of fixtures or None if request fails
@@ -304,22 +304,29 @@ class FotMobScraper:
         try:
             fixtures = []
             
-            # Try to find fixtures in different possible structures
-            if 'matches' in league_data:
-                matches = league_data.get('matches', {})
-                if 'allMatches' in matches:
-                    all_matches = matches['allMatches']
-                    for match in all_matches:
-                        if match.get('round', 0) == matchweek:
+            # Check for fixtures in API response
+            if 'fixtures' not in league_data:
+                logger.warning("Fixtures key not found in API response")
+                return None
+            
+            fixtures_data = league_data.get('fixtures', {})
+            if 'allMatches' in fixtures_data:
+                all_matches = fixtures_data['allMatches']
+                for match in all_matches:
+                    # Handle round as both string and int
+                    match_round = match.get('round')
+                    if match_round is not None:
+                        # Convert to string for comparison
+                        if str(match_round) == str(matchweek):
                             fixture = {
                                 'match_id': match.get('id'),
                                 'home_team': match.get('home', {}).get('name'),
-                                'home_team_id': match.get('home', {}).get('id'),
                                 'away_team': match.get('away', {}).get('name'),
+                                'home_team_id': match.get('home', {}).get('id'),
                                 'away_team_id': match.get('away', {}).get('id'),
-                                'date': match.get('status', {}).get('utcTime'),
-                                'status': match.get('status', {}).get('started', False),
-                                'round': match.get('round')
+                                'round': match.get('round'),
+                                'status': match.get('status', {}).get('utcTime'),
+                                'timestamp': match.get('status', {}).get('utcTime'),
                             }
                             fixtures.append(fixture)
             

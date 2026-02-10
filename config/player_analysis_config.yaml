@@ -5,8 +5,8 @@ analysis:
   premier_league:
     tournament_id: 17  # SofaScore Tournament ID
     league_id: 47      # FotMob League ID
-    season: "2024/2025"
-    sofascore_season_id: 52760  # SofaScore Season ID for 2024/2025
+    season: "2025/2026"
+    sofascore_season_id: 52760  # SofaScore Season ID for 2024/2025 (update when available)
     matchweek: 26
   
   # Probability calculation weights
