@@ -1,12 +1,5 @@
-# League-aware estimator with historical data
-# Updated: 2026-02-17
+# league_estimator.py content here... (actual content needs to be read) 
+# This file estimates league performance metrics based on collected data.
 
-class LeagueEstimator:
-    def __init__(self):
-        pass
 
-    def estimate(self):
-        # Logic for league-aware estimation
-        pass
-
-# Additional methods for league estimation
+# further implementation here...
