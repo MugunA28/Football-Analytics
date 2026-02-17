@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 Dixon-Coles Model - Professional betting model
 Used by betting syndicates for accurate predictions
@@ -84,3 +85,10 @@ class DixonColesModel:
         
         return both_score * 100
 
+=======
+# dixon_coles.py content here... (actual content needs to be read) 
+# This file implements the Dixon-Coles prediction model.
+
+
+# further implementation here...
+>>>>>>> 4cab15094e8a14ad692f4b9d37983ad988eb16a1

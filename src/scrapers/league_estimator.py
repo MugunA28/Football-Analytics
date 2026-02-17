@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 League-Aware Estimator
 Uses historical league statistics for better estimates
@@ -146,3 +147,10 @@ class LeagueEstimator:
                 'league': league
             }
 
+=======
+# league_estimator.py content here... (actual content needs to be read) 
+# This file estimates league performance metrics based on collected data.
+
+
+# further implementation here...
+>>>>>>> 4cab15094e8a14ad692f4b9d37983ad988eb16a1

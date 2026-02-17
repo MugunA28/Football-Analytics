@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/usr/bin/env python3
 """
 SIMPLE BETTING PREDICTOR
@@ -117,3 +118,10 @@ def main():
 if __name__ == '__main__':
     main()
 
+=======
+# bet_simple.py content here... (actual content needs to be read) 
+# This file contains simple betting strategies.
+
+
+# further implementation here...
+>>>>>>> 4cab15094e8a14ad692f4b9d37983ad988eb16a1

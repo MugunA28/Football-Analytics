@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 FREE Data Fetcher - With league-aware fallbacks
 """
@@ -52,3 +53,10 @@ class FreeDataFetcher:
         self.cache[team_name] = estimate
         return estimate
 
+=======
+# free_data_fetcher.py content here... (actual content needs to be read) 
+# This file fetches free football data from various sources.
+
+
+# further implementation here...
+>>>>>>> 4cab15094e8a14ad692f4b9d37983ad988eb16a1
