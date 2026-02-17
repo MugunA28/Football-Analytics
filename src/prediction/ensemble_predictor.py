@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """
 Ensemble Predictor - With league context
 """
@@ -227,10 +226,3 @@ class EnsemblePredictor:
         
         return results
 
-=======
-# ensemble_predictor.py content here... (actual content needs to be read) 
-# This file contains the ensemble prediction logic for the football analytics project.
-
-
-# further implementation here...
->>>>>>> 4cab15094e8a14ad692f4b9d37983ad988eb16a1

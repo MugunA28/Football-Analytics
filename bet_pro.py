@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #!/usr/bin/env python3
 """
 PROFESSIONAL BETTING ANALYZER
@@ -81,7 +80,7 @@ def find_best_bets(results):
     """Find top bets - SINGLE best team to score."""
     best_bets = {
         'over_1_5': None,
-        'team_total': None,  # CHANGED: Single best team (not home/away separate)
+        'team_total': None,
         'btts': None
     }
     
@@ -376,10 +375,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-=======
-# bet_pro.py content here... (actual content needs to be read) 
-# This file contains code for placing bets.
-
-
-# further implementation here...
->>>>>>> 4cab15094e8a14ad692f4b9d37983ad988eb16a1

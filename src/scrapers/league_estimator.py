@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """
 League-Aware Estimator
 Uses historical league statistics for better estimates
@@ -59,14 +58,14 @@ class LeagueEstimator:
                 'avg_away_conceded': 1.75,
                 'avg_total': 3.25
             },
-            'A-League': {  # Australian A-League
+            'A-League': {
                 'avg_home_scored': 1.35,
                 'avg_home_conceded': 1.20,
                 'avg_away_scored': 1.10,
                 'avg_away_conceded': 1.35,
                 'avg_total': 2.55
             },
-            'Australia A-League': {  # Alternative name
+            'Australia A-League': {
                 'avg_home_scored': 1.35,
                 'avg_home_conceded': 1.20,
                 'avg_away_scored': 1.10,
@@ -103,7 +102,7 @@ class LeagueEstimator:
             }
         }
     
-    def get_league_estimate(self, team_name: str, league: str, is_home: bool = True) -> Dict:
+    def get_league_estimate(self, team_name: str, league: str, is_home: bool = True):
         """
         Get league-aware estimate for a team.
         Uses actual historical league averages.
@@ -118,39 +117,17 @@ class LeagueEstimator:
         if not league_stats:
             league_stats = self.league_data['Default']
         
-        if is_home:
-            return {
-                'team_name': team_name,
-                'matches_played': 15,
-                'avg_goals_scored': league_stats['avg_total'] / 2,
-                'avg_goals_conceded': league_stats['avg_total'] / 2,
-                'home_avg_scored': league_stats['avg_home_scored'],
-                'home_avg_conceded': league_stats['avg_home_conceded'],
-                'away_avg_scored': league_stats['avg_away_scored'],
-                'away_avg_conceded': league_stats['avg_away_conceded'],
-                'last_5_form': ['W', 'D', 'W', 'L', 'D'],
-                'source': f'league_estimate_{league}',
-                'league': league
-            }
-        else:
-            return {
-                'team_name': team_name,
-                'matches_played': 15,
-                'avg_goals_scored': league_stats['avg_total'] / 2,
-                'avg_goals_conceded': league_stats['avg_total'] / 2,
-                'home_avg_scored': league_stats['avg_home_scored'],
-                'home_avg_conceded': league_stats['avg_home_conceded'],
-                'away_avg_scored': league_stats['avg_away_scored'],
-                'away_avg_conceded': league_stats['avg_away_conceded'],
-                'last_5_form': ['W', 'L', 'D', 'W', 'D'],
-                'source': f'league_estimate_{league}',
-                'league': league
-            }
+        return {
+            'team_name': team_name,
+            'matches_played': 15,
+            'avg_goals_scored': league_stats['avg_total'] / 2,
+            'avg_goals_conceded': league_stats['avg_total'] / 2,
+            'home_avg_scored': league_stats['avg_home_scored'],
+            'home_avg_conceded': league_stats['avg_home_conceded'],
+            'away_avg_scored': league_stats['avg_away_scored'],
+            'away_avg_conceded': league_stats['avg_away_conceded'],
+            'last_5_form': ['W', 'D', 'W', 'L', 'D'],
+            'source': f'league_estimate_{league}',
+            'league': league
+        }
 
-=======
-# league_estimator.py content here... (actual content needs to be read) 
-# This file estimates league performance metrics based on collected data.
-
-
-# further implementation here...
->>>>>>> 4cab15094e8a14ad692f4b9d37983ad988eb16a1
