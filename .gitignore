@@ -155,3 +155,6 @@ geckodriver
 SETUP_SUMMARY.md
 validate_setup.py
 demo_structure.py
+
+# Generated results (auto-saved JSON from value_bet.py / bet_pro.py)
+results/
