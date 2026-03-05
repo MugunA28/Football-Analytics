@@ -12,6 +12,98 @@ Advanced football match prediction system using **Dixon-Coles statistical model*
 - **BTTS Analysis**: Both Teams To Score probability calculations
 - **Real-time xG Calculation**: Expected Goals for each team
 
+## 🔥 Value Bet Detector (NEW)
+
+The newest and most powerful tool — finds **value bets** by comparing the model's probability estimates against bookmaker odds.
+
+### How to Run
+
+```bash
+python value_bet.py
+```
+
+### Input Format
+
+```
+Team A vs Team B (home_o0.5 away_o0.5 over_1.5)
+```
+
+Where:
+- `home_o0.5` = Bookmaker odds for home team Over 0.5 Goals
+- `away_o0.5` = Bookmaker odds for away team Over 0.5 Goals
+- `over_1.5` = Bookmaker odds for Over 1.5 Match Goals
+
+### Usage Example
+
+```
+> Manchester City vs Arsenal (1.12 1.45 1.40)
+> Liverpool vs Sheffield Utd (1.08 1.60 1.18)
+> Burnley vs Everton (1.35 1.55 1.65)
+> DONE
+```
+
+### Example Output
+
+```
+📊 VALUE BET ANALYSIS (Threshold: >15%)
+==================================================================================
+
+MATCH 1: Manchester City vs Arsenal  [Premier League]
+──────────────────────────────────────────────────────────────────
+  🏠 Man City Over 0.5 Goals
+     Model: 91.2%  |  Bookie: 89.3% (1.12)  |  Edge: +1.9%    ❌ NO VALUE
+
+  ✈️  Arsenal Over 0.5 Goals
+     Model: 75.4%  |  Bookie: 69.0% (1.45)  |  Edge: +6.4%    ❌ NO VALUE
+
+  ⚽ Over 1.5 Match Goals
+     Model: 89.3%  |  Bookie: 71.4% (1.40)  |  Edge: +17.9%   🔥 VALUE BET!
+
+==================================================================================
+🔥 RECOMMENDED BETS (Edge > 15%):
+==================================================================================
+
+  1. Man City vs Arsenal — Over 1.5 Match Goals
+     Edge: +17.9%  |  Model: 89.3%  |  Bookie Odds: 1.40
+     Confidence: 🔥🔥🔥
+
+==================================================================================
+📋 SUMMARY: 1 value bet(s) found out of 3 markets analyzed
+==================================================================================
+```
+
+### Edge Verdicts
+
+| Edge | Verdict | Meaning |
+|------|---------|---------|
+| > 15% | 🔥 VALUE BET! | Strong edge — recommended bet |
+| 10% – 15% | ⚠️ MARGINAL | Close but below threshold |
+| 0% – 10% | ❌ NO VALUE | Not worth it |
+| < 0% | 🚫 AVOID | Bookie odds are tighter than model |
+
+### How It Works
+
+The Value Bet Detector uses a **combined probability approach**:
+
+1. **Odds-Implied Probability** — converted directly from bookmaker odds
+2. **Dixon-Coles Model** — using league-specific xG estimates
+3. **Ensemble Weighting**:
+   - Fallback mode: 50% model / 50% odds-implied
+   - With real data: 80% model / 20% odds-implied
+4. **Auto-detects league** from 60+ team names across 8+ leagues
+
+### Markets Analyzed Per Match
+
+- 🏠 Home team Over 0.5 Goals
+- ✈️ Away team Over 0.5 Goals
+- ⚽ Over 1.5 Match Goals
+
+### Results Auto-Save
+
+Results are automatically saved to `results/value_YYYYMMDD_HHMMSS.json`.
+
+---
+
 ## 🚀 Quick Start
 
 ### Installation
@@ -131,18 +223,20 @@ When live team data is unavailable, uses historical league averages:
 
 ```
 Football-Analytics/
-├── bet_pro.py                          # Main analyzer
+├── value_bet.py                        # 🔥 Value Bet Detector (NEW)
+├── bet_pro.py                          # Professional analyzer
 ├── bet_simple.py                       # Simple interface
 ├── src/
 │   ├── prediction/
-│   │   ├── ensemble_predictor.py      # Ensemble model
+│   │   ├── value_detector.py           # Value detection engine (NEW)
+│   │   ├── ensemble_predictor.py       # Ensemble model
 │   │   ├── dixon_coles.py             # Dixon-Coles implementation
 │   │   └── betting_analyzer.py        # Legacy analyzer
 │   └── scrapers/
 │       ├── free_data_fetcher.py       # Free data sources
 │       ├── league_estimator.py        # League-based estimates
 │       └── fotmob_scraper.py          # FotMob data scraper
-├── results/                            # Saved predictions
+├── results/                            # Saved predictions (auto-generated)
 └── README.md
 ```
 
