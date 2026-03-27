@@ -144,6 +144,133 @@ class TestFotMobScraper:
         assert 'away_xg' in xg_data
         assert xg_data['home_xg'] == 1.8
         assert xg_data['away_xg'] == 1.2
+    
+    @patch.object(FotMobScraper, 'get_league_matches')
+    def test_get_premier_league_fixtures_success(self, mock_get_league):
+        """Test successful Premier League fixtures retrieval."""
+        # Mock API response with correct structure
+        mock_get_league.return_value = {
+            'fixtures': {
+                'allMatches': [
+                    {
+                        'id': 123456,
+                        'round': '26',
+                        'home': {
+                            'id': 8456,
+                            'name': 'Chelsea'
+                        },
+                        'away': {
+                            'id': 8463,
+                            'name': 'Leeds United'
+                        },
+                        'status': {
+                            'utcTime': '2026-02-14T15:00:00.000Z'
+                        }
+                    },
+                    {
+                        'id': 123457,
+                        'round': '26',
+                        'home': {
+                            'id': 8650,
+                            'name': 'Everton'
+                        },
+                        'away': {
+                            'id': 8678,
+                            'name': 'AFC Bournemouth'
+                        },
+                        'status': {
+                            'utcTime': '2026-02-14T15:00:00.000Z'
+                        }
+                    },
+                    {
+                        'id': 123458,
+                        'round': '27',  # Different round - should be filtered out
+                        'home': {
+                            'id': 8000,
+                            'name': 'Test Team A'
+                        },
+                        'away': {
+                            'id': 8001,
+                            'name': 'Test Team B'
+                        },
+                        'status': {
+                            'utcTime': '2026-02-21T15:00:00.000Z'
+                        }
+                    }
+                ]
+            }
+        }
+        
+        scraper = FotMobScraper()
+        fixtures = scraper.get_premier_league_fixtures(matchweek=26, season="2025/2026")
+        
+        assert fixtures is not None
+        assert len(fixtures) == 2
+        assert fixtures[0]['match_id'] == 123456
+        assert fixtures[0]['home_team'] == 'Chelsea'
+        assert fixtures[0]['away_team'] == 'Leeds United'
+        assert fixtures[0]['home_team_id'] == 8456
+        assert fixtures[0]['away_team_id'] == 8463
+        assert fixtures[0]['round'] == '26'
+        assert fixtures[0]['status'] == '2026-02-14T15:00:00.000Z'
+        assert fixtures[0]['timestamp'] == '2026-02-14T15:00:00.000Z'
+        
+        # Verify second fixture
+        assert fixtures[1]['match_id'] == 123457
+        assert fixtures[1]['home_team'] == 'Everton'
+        
+        # Verify method was called with correct parameters
+        mock_get_league.assert_called_once_with(league_id=47, season="2025/2026")
+    
+    @patch.object(FotMobScraper, 'get_league_matches')
+    def test_get_premier_league_fixtures_string_int_round(self, mock_get_league):
+        """Test that round filtering works with both string and int."""
+        # Mock API response with integer round
+        mock_get_league.return_value = {
+            'fixtures': {
+                'allMatches': [
+                    {
+                        'id': 123456,
+                        'round': 26,  # Integer instead of string
+                        'home': {'id': 8456, 'name': 'Chelsea'},
+                        'away': {'id': 8463, 'name': 'Leeds United'},
+                        'status': {'utcTime': '2026-02-14T15:00:00.000Z'}
+                    }
+                ]
+            }
+        }
+        
+        scraper = FotMobScraper()
+        fixtures = scraper.get_premier_league_fixtures(matchweek=26)
+        
+        assert fixtures is not None
+        assert len(fixtures) == 1
+        assert fixtures[0]['round'] == 26
+    
+    @patch.object(FotMobScraper, 'get_league_matches')
+    def test_get_premier_league_fixtures_missing_key(self, mock_get_league):
+        """Test handling when fixtures key is missing."""
+        # Mock API response without fixtures key
+        mock_get_league.return_value = {
+            'matches': {  # Wrong key
+                'allMatches': []
+            }
+        }
+        
+        scraper = FotMobScraper()
+        fixtures = scraper.get_premier_league_fixtures(matchweek=26)
+        
+        assert fixtures is None
+    
+    @patch.object(FotMobScraper, 'get_league_matches')
+    def test_get_premier_league_fixtures_no_data(self, mock_get_league):
+        """Test when get_league_matches returns None."""
+        mock_get_league.return_value = None
+        
+        scraper = FotMobScraper()
+        fixtures = scraper.get_premier_league_fixtures(matchweek=26)
+        
+        assert fixtures is None
 
 
 class TestOneXBetScraper:
